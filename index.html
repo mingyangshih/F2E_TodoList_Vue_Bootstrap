@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <meta
+    http-equiv="X-UA-Compatible"
+    content="ie=edge"
+  >
+  <title>ToDoList</title>
+  <link
+    href="https://fonts.googleapis.com/css?family=Roboto:400,700"
+    rel="stylesheet"
+  >
+  <link
+    rel="stylesheet"
+    href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+    integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf"
+    crossorigin="anonymous"
+  >
+  <link
+    rel="stylesheet"
+    href="css/all.css"
+  >
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+</head>
+
+<body>
+  <div
+    class="wrap"
+    id="vueTodo"
+  >
+    <!-- nav bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary py-0">
+      <div class="container">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div
+          class="collapse navbar-collapse"
+          id="navbarNav"
+        >
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item mx-6 d-flex justify-content-center">
+              <a
+                class="nav-link text-center py-4 font-weight-bold"
+                href="#"
+                :class="{'nav-link-border' : whiteLabel == 'tasks','text-white' : whiteLabel == 'tasks'}"
+                @click.prevent="whiteLabel = 'tasks'"
+              >My Tasks</a>
+            </li>
+            <li class="nav-item mx-6 d-flex justify-content-center">
+              <a
+                class="nav-link text-center py-4 font-weight-bold"
+                href="#"
+                :class="{'nav-link-border' : whiteLabel == 'progress','text-white' : whiteLabel == 'progress'}"
+                @click.prevent="whiteLabel = 'progress'"
+              >In Progress</a>
+            </li>
+            <li class="nav-item mx-6 d-flex justify-content-center">
+              <a
+                class="nav-link text-center py-4 font-weight-bold"
+                href="#"
+                :class="{'nav-link-border' : whiteLabel == 'completed','text-white' : whiteLabel == 'completed'}"
+                @click.prevent="whiteLabel = 'completed'"
+              >Completed</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- input section add task-->
+    <section class="container px-16 mt-4 inputSection">
+      <input
+        type="text"
+        class="form-control pl-5 topInput"
+        placeholder="+  Add Task"
+        v-if="!inputDetailChange"
+        @click="inputDetailChange = true"
+      >
+      <div
+        class="todoDetail"
+        v-if="inputDetailChange"
+      >
+        <div class="custom-control custom-checkbox d-flex align-items-center">
+          <input
+            type="checkbox"
+            class="custom-control-input"
+            id="customCheck1"
+          >
+          <label
+            class="custom-control-label ml-6"
+            for="customCheck1"
+          ></label>
+          <input
+            type="text"
+            placeholder="Type Something Here..."
+            class="form-control"
+            v-model="todoThings"
+            @keyup.enter="addTask"
+            @keyup.esc="cancelEnterTask"
+          >
+          <i class="far fa-star mr-6"></i>
+          <i class="fas fa-pen mr-6 text-primary"></i>
+        </div>
+        <div class="todoDetailBottom py-4 pl-72">
+          <div class="deadlineTitle d-flex align-items-center">
+            <i class="far fa-calendar-alt"></i>
+            <span class="deadline font-weight-bold ml-2">Deadline</span>
+          </div>
+          <div class="deadlineInput form-inline mt-2 ml-4">
+            <input
+              type="text"
+              placeholder="yyyy/mm/dd"
+              class="form-control mr-2"
+              v-model="date"
+            >
+            <input
+              type="text"
+              placeholder="hh:mm"
+              class="form-control"
+              v-model="hourMin"
+            >
+          </div>
+          <div class="fileTitle d-flex align-items-center mt-4">
+            <i class="far fa-file"></i>
+            <span class="file font-weight-bold ml-2">File</span>
+          </div>
+          <div class="fileInput mt-2 ml-4">
+            <input
+              type="file"
+              id="fileUpload"
+            >
+            <label
+              for="fileUpload"
+              class="text-center d-flex align-items-center justify-content-center font-weight-bold"
+            >
+              +
+            </label>
+          </div>
+          <div class="commentTitle mt-4">
+            <i class="far fa-comment-dots"></i>
+            <span class="comment font-weight-bold ml-0">Comment</span>
+          </div>
+          <div class="commentInput ml-4 mr-5 mt-2">
+            <textarea
+              name="comment"
+              id="comment"
+              class="form-control"
+              cols="50"
+              rows="50"
+              placeholder="Type your memo here..."
+              v-model="comment"
+            ></textarea>
+          </div>
+        </div>
+        <div class="btn-group w-100">
+          <button
+            type="button"
+            class="btn btn-light text-danger btn-lg py-4 w-50"
+            id="cancel"
+            @click.prevent="cancelEnterTask"
+          >X Cancel</button>
+          <button
+            type="button"
+            class="btn btn-primary text-white btn-lg py-4 w-50"
+            id="addTask"
+            @click.prevent="addTask"
+          >+ Add Task</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- todo list -->
+    <section class="container mt-4 px-16 todoList">
+      <ul class="container px-0">
+        <li
+          class=" pt-4 mb-2"
+          v-for="(item,index) in filterTodos"
+          :class="{'bg-unchoose' : !item.changeStar,'bg-lightYellow' : item.changeStar}"
+        >
+          <div
+            class="custom-control custom-checkbox d-flex align-items-center ml-6"
+            v-if="!item.clickDetailChange"
+            :class="{'bg-lightYellow' : item.changeStar}"
+          >
+            <input
+              type="checkbox"
+              class="custom-control-input"
+              :id="item.id"
+              v-model="item.inputCheckDone"
+            >
+            <label
+              class="custom-control-label"
+              :for="item.id"
+            ></label>
+            <input
+              type="text"
+              :placeholder="item.todoThings"
+              class="form-control"
+              @click.prevent="item.clickDetailChange = !item.clickDetailChange"
+              :class="{'bg-lightYellow' : item.changeStar, 'doneStyle' : item.inputCheckDone}"
+            >
+            <i
+              class="far fa-star mr-6"
+              @click.prevent="item.changeStar = !item.changeStar"
+              v-if="!item.changeStar"
+            ></i>
+            <i
+              class="fas fa-star mr-6 text-deepYellow"
+              @click.prevent="item.changeStar = !item.changeStar"
+              v-if="item.changeStar"
+            ></i>
+            <i
+              class="fas fa-pen mr-6 text-dark"
+              @click.prevent="item.clickDetailChange = !item.clickDetailChange"
+            ></i>
+          </div>
+          <div
+            class="ml-6"
+            v-if="!item.clickDetailChange"
+          >
+            <i class="far fa-calendar-alt ml-40 text-secondary  mb-3"></i>
+            <span class="text-secondary">{{item.date}}</span>
+            <i class="far fa-file ml-3 text-secondary"></i>
+            <i class="far fa-comment-dots ml-3 text-secondary"></i>
+            <span class="text-secondary">{{item.comment}}</span>
+          </div>
+          <!-- 點擊修改內容 -->
+          <div
+            class="todoDetail"
+            v-if="item.clickDetailChange"
+          >
+            <div
+              class="custom-control custom-checkbox d-flex align-items-center pl-6 border-bottom"
+              :class="{'bg-lightYellow' : item.changeStar}"
+            >
+              <input
+                type="checkbox"
+                class="custom-control-input"
+                :id="item.id"
+              >
+              <label
+                class="custom-control-label ml-6"
+                :for="item.id"
+              ></label>
+              <input
+                type="text"
+                placeholder="Type Something Here..."
+                class="form-control"
+                v-model="item.todoThings"
+                :class="{'bg-lightYellow' : item.changeStar}"
+              >
+              <i
+                class="far fa-star mr-6"
+                @click.prevent="item.changeStar = !item.changeStar"
+                v-if="!item.changeStar"
+              ></i>
+              <i
+                class="fas fa-star mr-6 text-deepYellow"
+                @click.prevent="item.changeStar = !item.changeStar"
+                v-if="item.changeStar"
+              ></i>
+              <i
+                class="fas fa-pen mr-6 text-primary"
+                @click.prevent="item.clickDetailChange = !item.clickDetailChange"
+              ></i>
+            </div>
+            <div
+              class="todoDetailBottom py-4 pl-72"
+              :class="{'bg-lightYellow' : item.changeStar}"
+            >
+              <div class="deadlineTitle d-flex align-items-center">
+                <i class="far fa-calendar-alt"></i>
+                <span class="deadline font-weight-bold ml-2">Deadline</span>
+              </div>
+              <div class="deadlineInput form-inline mt-2 ml-4">
+                <input
+                  type="text"
+                  placeholder="yyyy/mm/dd"
+                  class="form-control mr-2"
+                  v-model="item.date"
+                >
+                <input
+                  type="text"
+                  placeholder="hh:mm"
+                  class="form-control"
+                  v-model="item.hourMin"
+                >
+              </div>
+              <div class="fileTitle d-flex align-items-center mt-4">
+                <i class="far fa-file"></i>
+                <span class="file font-weight-bold ml-2">File</span>
+              </div>
+              <div class="fileInput mt-2 ml-4">
+                <input
+                  type="file"
+                  id="fileUpload"
+                >
+                <label
+                  for="fileUpload"
+                  class="text-center d-flex align-items-center justify-content-center font-weight-bold"
+                >
+                  +
+                </label>
+              </div>
+              <div class="commentTitle mt-4">
+                <i class="far fa-comment-dots"></i>
+                <span class="comment font-weight-bold ml-0">Comment</span>
+              </div>
+              <div class="commentInput ml-4 mr-5 mt-2">
+                <textarea
+                  name="comment"
+                  id="comment"
+                  class="form-control"
+                  cols="50"
+                  rows="5"
+                  placeholder="Type your memo here..."
+                  v-model="item.comment"
+                ></textarea>
+              </div>
+            </div>
+            <div class="btn-group w-100">
+              <button
+                type="button"
+                class="btn btn-light text-danger btn-lg py-4 w-50"
+                id="cancel"
+                @click.prevent="item.clickDetailChange = false"
+              >X Cancel</button>
+              <button
+                type="button"
+                class="btn btn-primary text-white btn-lg py-4 w-50"
+                id="addTask"
+                @click.prevent="clickChange(item,index)"
+              >+ Save</button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </section>
+    <!-- remaining  -->
+    <section class="container text-secondary  px-16 remaing">
+      <p class="taskRemaing ml-4">{{taskLeft}} tasks left</p>
+    </section>
+  </div>
+
+
+
+
+
+
+
+  <script
+    src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"
+  ></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+    crossorigin="anonymous"
+  ></script>
+  <script
+    src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"
+  ></script>
+  <script src="js/all.js"></script>
+</body>
+
+</html>

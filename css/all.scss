@@ -1,0 +1,13 @@
+@import "../node_modules/bootstrap/scss/functions";
+@import "../helpers/variables";
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+body{
+  background: #E1E1E1;
+  font-family: 'Roboto', sans-serif;
+}
+@import "../helpers/header";
+@import "../helpers/inputSection";
+@import "../helpers/todoDetailBottom";
+@import "../helpers/todoList";
+@import "../helpers/remain";
